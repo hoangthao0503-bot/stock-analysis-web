@@ -2,6 +2,7 @@ import { getStockReviews } from '@/lib/data-loader';
 import SearchDashboard from '@/components/SearchDashboard';
 
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 export default async function Home() {
   const reviews = await getStockReviews();

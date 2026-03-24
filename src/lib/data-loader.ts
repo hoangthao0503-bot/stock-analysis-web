@@ -4,16 +4,15 @@ import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
 import { StockReview } from '@/types';
 
+// Use a dynamic path for public/data that works in both dev and production
 const DATA_DIR = path.join(process.cwd(), 'public', 'data');
 
 export async function getStockReviews(): Promise<StockReview[]> {
   try {
     if (!fs.existsSync(DATA_DIR)) {
-      fs.mkdirSync(DATA_DIR, { recursive: true });
       return [];
     }
 
-    // Get all valid data files and sort by modification time (newest first)
     const files = fs.readdirSync(DATA_DIR)
       .map(name => ({
         name,
@@ -24,15 +23,12 @@ export async function getStockReviews(): Promise<StockReview[]> {
       .sort((a, b) => b.time - a.time);
 
     if (files.length === 0) {
-      console.warn('No data files found in public/data');
       return [];
     }
 
     const newestFile = files[0];
     const filePath = path.join(DATA_DIR, newestFile.name);
     let rawData: any[] = [];
-
-    console.log(`Loading newest data file: ${newestFile.name}`);
 
     if (newestFile.ext === '.xlsx' || newestFile.ext === '.xls') {
       const fileBuffer = fs.readFileSync(filePath);
@@ -49,24 +45,18 @@ export async function getStockReviews(): Promise<StockReview[]> {
       rawData = result.data;
     }
 
-    return rawData.map((row: any) => {
-      try {
-        return {
-          Symbol: (row['Mã CK'] || row['Symbol'] || '').toString().trim(),
-          Industry: (row['Ngành'] || row['Industry'] || '').toString().trim(),
-          Summary: (row['Tóm tắt'] || '').toString(),
-          FullReview: (
-            row['----------------------------------------------------Review về KQKD / Khuyến nghị từ SSI Research----------------------------------------------------'] || 
-            row['--------------------------------------------Review về KQKD / Khuyến nghị từ SSI Research--------------------------------------------'] ||
-            row['Review'] || 
-            ''
-          ).toString(),
-          LastUpdated: (row['Cập nhật mới nhất'] || row['Updated'] || '').toString(),
-        };
-      } catch (e) {
-        return null;
-      }
-    }).filter((item): item is StockReview => item !== null && item.Symbol !== '');
+    return rawData.map((row: any) => ({
+      Symbol: (row['Mã CK'] || row['Symbol'] || '').toString().trim(),
+      Industry: (row['Ngành'] || row['Industry'] || '').toString().trim(),
+      Summary: (row['Tóm tắt'] || '').toString(),
+      FullReview: (
+        row['----------------------------------------------------Review về KQKD / Khuyến nghị từ SSI Research----------------------------------------------------'] || 
+        row['--------------------------------------------Review về KQKD / Khuyến nghị từ SSI Research--------------------------------------------'] ||
+        row['Review'] || 
+        ''
+      ).toString(),
+      LastUpdated: (row['Cập nhật mới nhất'] || row['Updated'] || '').toString(),
+    })).filter(item => item.Symbol !== '');
 
   } catch (error) {
     console.error('Error loading stock reviews:', error);

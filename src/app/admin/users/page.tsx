@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 export default async function AdminUsersPage() {
   // In a real app, you would check if the current user is an admin here.

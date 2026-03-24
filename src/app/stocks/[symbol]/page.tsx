@@ -5,6 +5,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 interface PageProps {
   params: Promise<{ symbol: string }>;
