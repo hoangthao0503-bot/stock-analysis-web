@@ -15,24 +15,25 @@ export default function SearchDashboard({ initialReviews }: SearchDashboardProps
   const { data: session, status } = useSession();
   const router = useRouter();
   
-  useEffect(() => {
+  /* Tạm thời gỡ bỏ chuyển hướng tự động để bạn xem giao diện */
+  /* useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/dang-nhap');
     }
-  }, [status, router]);
+  }, [status, router]); */
 
   const filteredReviews = initialReviews.filter(review => 
     review.Symbol.toLowerCase().includes(search.toLowerCase()) ||
     review.Industry.toLowerCase().includes(search.toLowerCase())
   );
 
-  if (status === 'loading' || status === 'unauthenticated') {
+  /* if (status === 'loading' || status === 'unauthenticated') {
     return (
       <div className="flex items-center justify-center py-20">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
     );
-  }
+  } */
 
   return (
     <div className="space-y-12 pb-20">
