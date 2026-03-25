@@ -29,7 +29,7 @@ export default function AuthButton() {
 
   return (
     <Link
-      href="/login"
+      href="/dang-nhap"
       className="bg-slate-900 text-white px-8 py-3 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-blue-600 transition-all shadow-xl shadow-slate-200 active:scale-95"
     >
       Đăng nhập

@@ -1,11 +1,15 @@
 import Link from 'next/link';
-import { getStockBySymbol } from '@/lib/data-loader';
+import { getStockBySymbol, getStockReviews } from '@/lib/data-loader';
 import { notFound } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
-export const dynamic = 'force-dynamic';
-export const runtime = 'nodejs';
+export async function generateStaticParams() {
+  const reviews = await getStockReviews();
+  return reviews.map((review) => ({
+    symbol: encodeURIComponent(review.Symbol),
+  }));
+}
 
 interface PageProps {
   params: Promise<{ symbol: string }>;

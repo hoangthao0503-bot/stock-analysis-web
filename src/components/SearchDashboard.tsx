@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { StockReview } from '@/types';
 import { useSession, signIn } from 'next-auth/react';
@@ -11,12 +12,27 @@ interface SearchDashboardProps {
 
 export default function SearchDashboard({ initialReviews }: SearchDashboardProps) {
   const [search, setSearch] = useState('');
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
+  const router = useRouter();
   
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/dang-nhap');
+    }
+  }, [status, router]);
+
   const filteredReviews = initialReviews.filter(review => 
     review.Symbol.toLowerCase().includes(search.toLowerCase()) ||
     review.Industry.toLowerCase().includes(search.toLowerCase())
   );
+
+  if (status === 'loading' || status === 'unauthenticated') {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-12 pb-20">
@@ -34,19 +50,6 @@ export default function SearchDashboard({ initialReviews }: SearchDashboardProps
           onChange={(e) => setSearch(e.target.value)}
         />
       </div>
-
-      {!session && (
-        <div className="max-w-2xl mx-auto bg-blue-50 border border-blue-100 p-6 rounded-2xl text-center">
-          <p className="text-blue-800 font-bold mb-3 text-lg">🔒 Bạn chưa đăng nhập!</p>
-          <p className="text-blue-600 mb-4 text-sm">Hãy đăng nhập để xem chi tiết bài phân tích và khuyến nghị từ SSI Research.</p>
-          <button 
-            onClick={() => signIn()}
-            className="bg-blue-600 text-white px-8 py-3 rounded-xl font-black text-sm hover:bg-blue-700 transition-all shadow-md active:scale-95 uppercase tracking-widest"
-          >
-            Đăng nhập ngay
-          </button>
-        </div>
-      )}
 
       <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {filteredReviews.map((item) => (

@@ -55,7 +55,7 @@ const authOptions: NextAuthOptions = {
     }),
   ],
   pages: {
-    signIn: '/login',
+    signIn: '/dang-nhap',
   },
   session: {
     strategy: "jwt",
