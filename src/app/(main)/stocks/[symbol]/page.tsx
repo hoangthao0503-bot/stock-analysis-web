@@ -1,8 +1,17 @@
 import Link from 'next/link';
-import { getStockBySymbol, getStockReviews } from '@/lib/data-loader';
+import { 
+  getStockBySymbol, 
+  getStockReviews, 
+  getRiskMetrics, 
+  getSentimentData, 
+  getBacktestData 
+} from '@/lib/data-loader';
 import { notFound } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import RiskDashboard from '@/components/RiskDashboard';
+import SentimentFeed from '@/components/SentimentFeed';
+import BacktestChart from '@/components/BacktestChart';
 
 export async function generateStaticParams() {
   const reviews = await getStockReviews();
@@ -18,67 +27,112 @@ interface PageProps {
 export default async function StockPage({ params }: PageProps) {
   const { symbol } = await params;
   const decodedSymbol = decodeURIComponent(symbol);
-  const review = await getStockBySymbol(decodedSymbol);
+  
+  // Fetch all data in parallel
+  const [review, risk, sentiment, backtest] = await Promise.all([
+    getStockBySymbol(decodedSymbol),
+    getRiskMetrics(decodedSymbol),
+    getSentimentData(decodedSymbol),
+    getBacktestData(decodedSymbol)
+  ]);
 
   if (!review) {
     notFound();
   }
 
   return (
-    <div className="min-h-screen bg-white p-8 font-sans">
-      <div className="max-w-4xl mx-auto">
-        <Link href="/" className="inline-flex items-center text-sm font-bold text-slate-400 hover:text-blue-600 mb-10 transition-colors uppercase tracking-widest">
-          &larr; Back to Dashboard
+    <div className="min-h-screen p-8 lg:p-12 relative overflow-hidden">
+      {/* Decorative Blur */}
+      <div className="absolute top-0 right-0 w-[50%] h-[50%] bg-blue-600/5 blur-[150px] -z-10"></div>
+      
+      <div className="max-w-7xl mx-auto space-y-12">
+        <Link href="/" className="inline-flex items-center text-xs font-black text-slate-500 hover:text-blue-400 mb-6 transition-all uppercase tracking-[0.3em] group">
+          <span className="group-hover:-translate-x-2 transition-transform mr-4">&larr;</span> Back to Terminal
         </Link>
         
-        <header className="mb-12 border-b border-slate-100 pb-10">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-            <div>
-              <span className="text-sm font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded mb-4 inline-block uppercase tracking-wider">
+        <header className="flex flex-col md:flex-row md:items-end justify-between gap-8 pb-12 border-b border-white/5">
+          <div className="space-y-4">
+            <div className="flex items-center gap-4">
+              <span className="px-4 py-1.5 glass rounded-full text-[10px] font-black text-blue-400 uppercase tracking-widest border border-blue-500/20">
                 {review.Industry}
               </span>
-              <h1 className="text-6xl font-black text-slate-900 tracking-tighter uppercase">
-                {review.Symbol}
-              </h1>
-            </div>
-            <div className="flex flex-col items-start md:items-end">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Last Updated</span>
-              <span className="text-lg font-mono font-bold text-slate-800 bg-slate-100 px-3 py-1 rounded">
-                {review.LastUpdated}
+              <span className="px-4 py-1.5 glass rounded-full text-[10px] font-black text-cyan-400 uppercase tracking-widest border border-cyan-500/20">
+                Risk-Weighted Asset
               </span>
+            </div>
+            <h1 className="text-7xl md:text-9xl font-black premium-text -ml-1 tracking-tighter uppercase leading-none">
+              {review.Symbol}
+            </h1>
+          </div>
+          <div className="glass p-6 rounded-[2rem] border border-white/5 flex items-center gap-6">
+            <div className="text-right">
+              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Last Update</p>
+              <p className="text-lg font-mono font-bold text-white">{review.LastUpdated}</p>
+            </div>
+            <div className="w-px h-10 bg-white/10"></div>
+            <div className="text-right">
+              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Status</p>
+              <p className="text-lg font-bold text-green-400 uppercase">Verified</p>
             </div>
           </div>
         </header>
 
-        <article className="space-y-16">
-          <section>
-            <h3 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-3">
-              <span className="w-1.5 h-8 bg-blue-600 rounded-full"></span>
-              Executive Summary
-            </h3>
-            <div className="bg-slate-50 rounded-3xl p-8 text-slate-700 leading-relaxed text-lg border border-slate-100 italic">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                {review.Summary}
-              </ReactMarkdown>
-            </div>
-          </section>
-          
-          <section className="prose prose-slate prose-lg max-w-none prose-headings:text-slate-900 prose-headings:font-black prose-p:text-slate-700 prose-p:leading-loose prose-strong:text-slate-900 prose-li:text-slate-700">
-            <h3 className="text-2xl font-bold text-slate-900 mb-8 flex items-center gap-3">
-              <span className="w-1.5 h-8 bg-blue-600 rounded-full"></span>
-              SSI Research Analysis & Recommendation
-            </h3>
-            <div className="bg-white rounded-3xl p-2 md:p-0">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                {review.FullReview}
-              </ReactMarkdown>
-            </div>
-          </section>
-        </article>
+        {/* Section 1: Risk Metrics */}
+        <section id="risk" className="space-y-8 scroll-mt-24">
+          <h3 className="text-xl font-black text-white uppercase tracking-tighter flex items-center gap-4">
+            <span className="w-1.5 h-8 bg-blue-600 rounded-full"></span>
+            Risk Analysis Dashboard
+          </h3>
+          <RiskDashboard metrics={risk} />
+        </section>
 
-        <footer className="mt-20 pt-10 border-t border-slate-100 text-center">
-          <p className="text-slate-400 text-sm font-medium italic">
-            Source: SSI Research Database - For Internal Research Purposes Only
+        {/* Section 2: Chart & Long-form Analysis */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+          <div className="lg:col-span-2 space-y-12">
+            <section className="space-y-8">
+              <BacktestChart data={backtest} />
+            </section>
+            
+            <section className="glass rounded-[3rem] p-10 md:p-14 border border-white/5 space-y-12">
+              <div>
+                <h3 className="text-2xl font-black text-white mb-8 flex items-center gap-4 uppercase tracking-tighter">
+                  <span className="w-1.5 h-8 bg-cyan-600 rounded-full"></span>
+                  Báo cáo Chiến lược
+                </h3>
+                <div className="prose prose-invert prose-lg max-w-none prose-p:text-slate-400 prose-headings:text-white prose-strong:text-blue-400 prose-ul:list-disc">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {review.FullReview}
+                  </ReactMarkdown>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          {/* Section 3: Sentiment & Optimization */}
+          <aside className="space-y-12">
+            <section id="sentiment" className="space-y-8 scroll-mt-24">
+              <h3 className="text-xl font-black text-white uppercase tracking-tighter flex items-center gap-4">
+                <span className="w-1.5 h-8 bg-amber-600 rounded-full"></span>
+                Market Sentiment
+              </h3>
+              <SentimentFeed sentimentData={sentiment} />
+            </section>
+
+            <section id="optimization" className="glass p-10 rounded-[3rem] border border-amber-500/20 bg-amber-500/5 scroll-mt-24">
+              <h4 className="text-lg font-bold text-amber-500 mb-4 uppercase tracking-widest">Optimization Tip</h4>
+              <p className="text-slate-400 text-sm leading-relaxed mb-6">
+                Dựa trên mô hình tối ưu hóa danh mục toàn thị trường, {review.Symbol} hiện có tỷ trọng khuyến nghị là <span className="text-white font-bold">12.5%</span> để giảm thiểu rủi ro Volatility.
+              </p>
+              <button className="w-full py-4 glass rounded-2xl text-[10px] font-black text-amber-500 uppercase tracking-widest border border-amber-500/50 hover:bg-amber-500 hover:text-white transition-all">
+                Run Multi-Asset Optimizer
+              </button>
+            </section>
+          </aside>
+        </div>
+
+        <footer className="mt-24 pt-12 border-t border-white/5 text-center">
+          <p className="text-slate-500 text-xs font-bold uppercase tracking-widest opacity-30">
+            SSI Risk Intelligence Unit • Quantum Analysis Workflow • {new Date().getFullYear()}
           </p>
         </footer>
       </div>

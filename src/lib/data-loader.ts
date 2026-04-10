@@ -20,7 +20,12 @@ export async function getStockReviews(): Promise<StockReview[]> {
         ext: path.extname(name).toLowerCase()
       }))
       .filter(f => (f.ext === '.csv' || f.ext === '.xlsx' || f.ext === '.xls') && !f.name.includes('sample'))
-      .sort((a, b) => b.time - a.time);
+      .sort((a, b) => {
+        // Prioritise database.csv (Luahoa data) first, then by newest mtime
+        if (a.name === 'database.csv') return -1;
+        if (b.name === 'database.csv') return 1;
+        return b.time - a.time;
+      });
 
     if (files.length === 0) {
       return [];
@@ -37,7 +42,8 @@ export async function getStockReviews(): Promise<StockReview[]> {
       const worksheet = workbook.Sheets[sheetName];
       rawData = XLSX.utils.sheet_to_json(worksheet);
     } else {
-      const fileContent = fs.readFileSync(filePath, 'utf8');
+      // Read with UTF-8 BOM stripping for Vietnamese CSV files (Luahoa.streamlit format)
+      const fileContent = fs.readFileSync(filePath, 'utf8').replace(/^\uFEFF/, '');
       const result = Papa.parse(fileContent, {
         header: true,
         skipEmptyLines: true,
@@ -56,7 +62,7 @@ export async function getStockReviews(): Promise<StockReview[]> {
         ''
       ).toString(),
       LastUpdated: (row['Cập nhật mới nhất'] || row['Updated'] || '').toString(),
-    })).filter(item => item.Symbol !== '');
+    })).filter(item => item.Symbol !== '' && item.Symbol.length <= 10);
 
   } catch (error) {
     console.error('Error loading stock reviews:', error);
@@ -67,4 +73,34 @@ export async function getStockReviews(): Promise<StockReview[]> {
 export async function getStockBySymbol(symbol: string): Promise<StockReview | undefined> {
   const data = await getStockReviews();
   return data.find(d => d.Symbol.toLowerCase() === symbol.toLowerCase());
+}
+
+export async function getRiskMetrics(symbol: string) {
+  try {
+    const filePath = path.join(DATA_DIR, 'risk', `${symbol.toUpperCase()}_risk.json`);
+    if (!fs.existsSync(filePath)) return null;
+    return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  } catch {
+    return null;
+  }
+}
+
+export async function getSentimentData(symbol: string) {
+  try {
+    const filePath = path.join(DATA_DIR, 'sentiment', `${symbol.toUpperCase()}_sentiment.json`);
+    if (!fs.existsSync(filePath)) return null;
+    return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  } catch {
+    return null;
+  }
+}
+
+export async function getBacktestData(symbol: string) {
+  try {
+    const filePath = path.join(DATA_DIR, 'backtest', `${symbol.toUpperCase()}_backtest.json`);
+    if (!fs.existsSync(filePath)) return null;
+    return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  } catch {
+    return null;
+  }
 }

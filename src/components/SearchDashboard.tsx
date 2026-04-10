@@ -15,44 +15,29 @@ export default function SearchDashboard({ initialReviews }: SearchDashboardProps
   const { data: session, status } = useSession();
   const router = useRouter();
   
-  /* Tạm thời gỡ bỏ chuyển hướng tự động để bạn xem giao diện */
-  /* useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/dang-nhap');
-    }
-  }, [status, router]); */
-
   const filteredReviews = initialReviews.filter(review => 
     review.Symbol.toLowerCase().includes(search.toLowerCase()) ||
     review.Industry.toLowerCase().includes(search.toLowerCase())
   );
 
-  /* if (status === 'loading' || status === 'unauthenticated') {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  } */
-
   return (
-    <div className="space-y-12 pb-20">
-      <div className="max-w-xl mx-auto relative group">
-        <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
-          <svg className="h-5 w-5 text-slate-300 group-focus-within:text-blue-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <div className="space-y-16 pb-32">
+      <div className="max-w-2xl mx-auto relative group">
+        <div className="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none">
+          <svg className="h-6 w-6 text-slate-500 group-focus-within:text-blue-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
         </div>
         <input
           type="text"
           placeholder="Tìm theo Mã CK hoặc Ngành (ví dụ: FPT, Thủy sản...)"
-          className="block w-full pl-12 pr-4 py-5 border-2 border-slate-100 rounded-3xl leading-5 bg-white placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all text-lg shadow-sm"
+          className="block w-full pl-16 pr-6 py-6 glass rounded-3xl leading-5 text-white placeholder-slate-500 focus:outline-none focus:ring-4 focus:ring-blue-500/20 active:scale-[0.99] transition-all text-xl shadow-2xl border-white/5"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
       </div>
 
-      <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
         {filteredReviews.map((item) => (
           <Link 
             key={item.Symbol} 
@@ -63,31 +48,37 @@ export default function SearchDashboard({ initialReviews }: SearchDashboardProps
                 signIn();
               }
             }}
-            className="group relative bg-white rounded-2xl p-8 border-2 border-slate-50 hover:border-blue-500 hover:shadow-2xl transition-all duration-300 flex flex-col items-center text-center transform hover:-translate-y-2"
+            className="group relative glass rounded-[2.5rem] p-10 border border-white/5 hover:border-blue-500/50 hover:shadow-[0_0_50px_-12px_rgba(59,130,246,0.3)] transition-all duration-500 flex flex-col items-center text-center overflow-hidden"
           >
-            <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-blue-600 transition-all duration-300 group-hover:rotate-6 shadow-sm">
-              <span className="text-slate-400 font-black text-3xl group-hover:text-white uppercase transition-colors">
+            {/* Animated Gradient Background on Hover */}
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-600/0 to-cyan-600/0 group-hover:from-blue-600/5 group-hover:to-cyan-600/5 transition-all duration-500"></div>
+
+            <div className="w-20 h-20 bg-slate-800/50 rounded-[1.5rem] flex items-center justify-center mb-8 group-hover:bg-blue-600 transition-all duration-500 group-hover:scale-110 group-hover:rotate-6 shadow-inner border border-white/5 relative z-10">
+              <span className="text-slate-500 font-black text-4xl group-hover:text-white uppercase transition-colors">
                 {item.Symbol[0]}
               </span>
             </div>
-            <h2 className="text-2xl font-black text-slate-900 mb-2 group-hover:text-blue-600 transition-colors uppercase tracking-tight">
+            
+            <h2 className="text-3xl font-black text-white mb-3 group-hover:text-blue-400 transition-colors uppercase tracking-tighter relative z-10">
               {item.Symbol}
             </h2>
-            <p className="text-xs text-blue-600 font-black bg-blue-50 px-3 py-1 rounded-full uppercase tracking-tighter">
+            
+            <p className="text-xs text-blue-400 font-bold bg-blue-500/10 px-4 py-1.5 rounded-full uppercase tracking-widest border border-blue-500/20 relative z-10">
               {item.Industry}
             </p>
             
-            <div className="mt-8 pt-6 border-t border-slate-50 w-full flex justify-center items-center gap-2 text-blue-600 text-xs font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0">
-              {session ? 'Xem phân tích' : 'Đăng nhập để xem'} &rarr;
+            <div className="mt-10 pt-8 border-t border-white/5 w-full flex justify-center items-center gap-3 text-blue-400 text-xs font-black uppercase tracking-[0.2em] opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-4 group-hover:translate-y-0 relative z-10">
+              {session ? 'Analyze Risk' : 'Login to View'} 
+              <span className="group-hover:translate-x-1 transition-transform">&rarr;</span>
             </div>
           </Link>
         ))}
       </section>
 
       {filteredReviews.length === 0 && (
-        <div className="text-center py-20 text-slate-400 bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200">
-          <p className="text-xl font-bold">Không tìm thấy mã "{search}"</p>
-          <p className="text-sm mt-2">Hãy thử tìm kiếm theo ngành hoặc mã khác.</p>
+        <div className="text-center py-32 glass rounded-[3rem] border border-white/5">
+          <p className="text-2xl font-bold text-slate-500">Không tìm thấy mã "{search}"</p>
+          <p className="text-slate-600 mt-3">Hệ thống đang mở rộng cơ sở dữ liệu thị trường.</p>
         </div>
       )}
     </div>
