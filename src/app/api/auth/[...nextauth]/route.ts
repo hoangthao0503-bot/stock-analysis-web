@@ -92,7 +92,7 @@ const authOptions: NextAuthOptions = {
       return true;
     }
   },
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.NEXTAUTH_SECRET || "fallback_secret_string_for_vercel_production_12345",
 };
 
 const handler = NextAuth(authOptions);
