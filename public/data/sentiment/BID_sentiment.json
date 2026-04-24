@@ -1,0 +1,23 @@
+[
+  {
+    "title": "BID cong bo ket qua kinh doanh vuot ky vong",
+    "source": "Vietstock",
+    "date": "23/04/2026",
+    "sentiment": "positive",
+    "link": "https://ssi.com.vn"
+  },
+  {
+    "title": "Khoi ngoai quay dau ban rong BID",
+    "source": "Vietstock",
+    "date": "22/04/2026",
+    "sentiment": "negative",
+    "link": "https://ssi.com.vn"
+  },
+  {
+    "title": "Trien vong tang truong cua BID kha quan trong quy toi",
+    "source": "Tin nhanh chứng khoán",
+    "date": "21/04/2026",
+    "sentiment": "positive",
+    "link": "https://ssi.com.vn"
+  }
+]

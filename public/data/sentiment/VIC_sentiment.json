@@ -1,0 +1,23 @@
+[
+  {
+    "title": "Phan tich ky thuat: VIC xuat hien tin hieu mua manh",
+    "source": "Vietstock",
+    "date": "23/04/2026",
+    "sentiment": "positive",
+    "link": "https://ssi.com.vn"
+  },
+  {
+    "title": "Ap luc chot loi gia tang tai ma VIC",
+    "source": "VNDirect",
+    "date": "22/04/2026",
+    "sentiment": "negative",
+    "link": "https://ssi.com.vn"
+  },
+  {
+    "title": "Cap nhat dien bien giao dich ma VIC phien hom nay",
+    "source": "Vietstock",
+    "date": "21/04/2026",
+    "sentiment": "neutral",
+    "link": "https://ssi.com.vn"
+  }
+]

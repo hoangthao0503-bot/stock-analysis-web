@@ -75,6 +75,14 @@ export async function getStockBySymbol(symbol: string): Promise<StockReview | un
   return data.find(d => d.Symbol.toLowerCase() === symbol.toLowerCase());
 }
 
+export async function getPeersByIndustry(industry: string, currentSymbol: string): Promise<StockReview[]> {
+  const data = await getStockReviews();
+  return data.filter(d => 
+    d.Industry.toLowerCase() === industry.toLowerCase() && 
+    d.Symbol.toLowerCase() !== currentSymbol.toLowerCase()
+  );
+}
+
 export async function getRiskMetrics(symbol: string) {
   try {
     const filePath = path.join(DATA_DIR, 'risk', `${symbol.toUpperCase()}_risk.json`);
@@ -101,6 +109,36 @@ export async function getBacktestData(symbol: string) {
     if (!fs.existsSync(filePath)) return null;
     return JSON.parse(fs.readFileSync(filePath, 'utf8'));
   } catch {
+    return null;
+  }
+}
+
+export async function getMarketReference() {
+  try {
+    const filePath = path.join(DATA_DIR, 'market_reference.json');
+    if (!fs.existsSync(filePath)) return null;
+    return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  } catch {
+    return null;
+  }
+}
+
+// ---- Phân tích Kỹ thuật & Data Storytelling (VPS API) ----
+import { processTradingData, TechnicalIndicators } from '@/lib/technical-analysis';
+
+export async function getTechnicalAnalysis(symbol: string): Promise<TechnicalIndicators | null> {
+  try {
+    const now = Math.floor(Date.now() / 1000);
+    const from = now - 365 * 24 * 60 * 60; // 1 year of data
+
+    const url = `https://histdatafeed.vps.com.vn/tradingview/history?symbol=${symbol}&resolution=D&from=${from}&to=${now}`;
+    const res = await fetch(url, { next: { revalidate: 3600 } }); // Cache for 1 hour
+    
+    if (!res.ok) return null;
+    const data = await res.json();
+    return processTradingData(symbol, data);
+  } catch (error) {
+    console.error('Failed to get technical analysis:', error);
     return null;
   }
 }

@@ -1,9 +1,13 @@
-import { getStockReviews } from '@/lib/data-loader';
+import { getStockReviews, getMarketReference } from '@/lib/data-loader';
 import SearchDashboard from '@/components/SearchDashboard';
+import MarketOverview from '@/components/MarketOverview';
 import Link from 'next/link';
+
+export const revalidate = 60; // Auto-rebuild in background every 60s
 
 export default async function Home() {
   const reviews = await getStockReviews();
+  const marketData = await getMarketReference();
 
   return (
     <main className="min-h-screen p-8 lg:p-12 relative overflow-hidden">
@@ -12,7 +16,7 @@ export default async function Home() {
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-cyan-500/10 blur-[120px] rounded-full"></div>
 
       <div className="max-w-7xl mx-auto relative z-10">
-        <header className="mb-20 text-center space-y-4">
+        <header className="mb-10 text-center space-y-4">
           <h1 className="text-6xl md:text-8xl font-black tracking-tight mb-6 premium-text">
             SSI Risk & Portfolio Optimizer
           </h1>
@@ -31,6 +35,9 @@ export default async function Home() {
             </Link>
           </div>
         </header>
+
+        {/* Live Market Overview */}
+        <MarketOverview data={marketData} />
 
         <SearchDashboard initialReviews={reviews} />
 

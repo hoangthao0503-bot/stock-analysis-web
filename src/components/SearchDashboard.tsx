@@ -12,10 +12,30 @@ interface SearchDashboardProps {
 
 export default function SearchDashboard({ initialReviews }: SearchDashboardProps) {
   const [search, setSearch] = useState('');
+  const [reviews, setReviews] = useState<StockReview[]>(initialReviews);
   const { data: session, status } = useSession();
   const router = useRouter();
+
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        const res = await fetch('/api/reviews');
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.length > 0) {
+            setReviews(data);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch reviews:', error);
+      }
+    };
+
+    const intervalId = setInterval(fetchReviews, 60000); // 1 minute
+    return () => clearInterval(intervalId);
+  }, []);
   
-  const filteredReviews = initialReviews.filter(review => 
+  const filteredReviews = reviews.filter(review => 
     review.Symbol.toLowerCase().includes(search.toLowerCase()) ||
     review.Industry.toLowerCase().includes(search.toLowerCase())
   );
@@ -41,13 +61,7 @@ export default function SearchDashboard({ initialReviews }: SearchDashboardProps
         {filteredReviews.map((item) => (
           <Link 
             key={item.Symbol} 
-            href={session ? `/stocks/${item.Symbol}` : '#'}
-            onClick={(e) => {
-              if (!session) {
-                e.preventDefault();
-                signIn();
-              }
-            }}
+            href={`/stocks/${item.Symbol}`}
             className="group relative glass rounded-[2.5rem] p-10 border border-white/5 hover:border-blue-500/50 hover:shadow-[0_0_50px_-12px_rgba(59,130,246,0.3)] transition-all duration-500 flex flex-col items-center text-center overflow-hidden"
           >
             {/* Animated Gradient Background on Hover */}
@@ -68,7 +82,7 @@ export default function SearchDashboard({ initialReviews }: SearchDashboardProps
             </p>
             
             <div className="mt-10 pt-8 border-t border-white/5 w-full flex justify-center items-center gap-3 text-blue-400 text-xs font-black uppercase tracking-[0.2em] opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-4 group-hover:translate-y-0 relative z-10">
-              {session ? 'Analyze Risk' : 'Login to View'} 
+              Analyze Risk
               <span className="group-hover:translate-x-1 transition-transform">&rarr;</span>
             </div>
           </Link>

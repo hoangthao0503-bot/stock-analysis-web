@@ -59,11 +59,19 @@ const authOptions: NextAuthOptions = {
   },
   session: {
     strategy: "jwt",
+    maxAge: 10 * 365 * 24 * 60 * 60, // 10 years
   },
   callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+      }
+      return token;
+    },
     async session({ session, token }) {
-      if (session.user && token.sub) {
-        // session.user.id = token.sub; // Adding ID to session if needed
+      if (session.user && token.id) {
+        // @ts-ignore
+        session.user.id = token.id;
       }
       return session;
     },
