@@ -62,16 +62,10 @@ const authOptions: NextAuthOptions = {
     maxAge: 10 * 365 * 24 * 60 * 60, // 10 years
   },
   callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-      }
-      return token;
-    },
     async session({ session, token }) {
-      if (session.user && token.id) {
+      if (session.user && token.sub) {
         // @ts-ignore
-        session.user.id = token.id;
+        session.user.id = token.sub;
       }
       return session;
     },
